@@ -1,0 +1,4 @@
+[General]
+loginMode=emptySession
+offerShutdown=true
+shutdownType=0

@@ -1,0 +1,167 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+      - 'v[0-9]+.[0-9]+.[0-9]+-*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and Publish Release
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged --cap-add=SYS_ADMIN --cap-add=MKNOD
+
+    steps:
+      # ── Setup ──────────────────────────────────────────────
+      - name: Initialize pacman keyring
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Sy --noconfirm archlinux-keyring
+          pacman -Su --noconfirm
+
+      - name: Install build dependencies
+        run: |
+          pacman -S --noconfirm --needed \
+            archiso git base-devel imagemagick \
+            grub dosfstools squashfs-tools erofs-utils \
+            mkinitcpio-archiso github-cli
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0    # full history for changelog generation
+
+      - name: Cache pacman packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/pacman/pkg
+          key: pacman-release-${{ hashFiles('packages.x86_64') }}
+          restore-keys: pacman-release-
+
+      # ── Extract version info ────────────────────────────────
+      - name: Extract version
+        id: version
+        run: |
+          TAG="${{ github.ref_name }}"
+          VERSION="${TAG#v}"
+          PRERELEASE="false"
+          [[ "$TAG" == *"-"* ]] && PRERELEASE="true"
+          echo "tag=${TAG}"             >> "$GITHUB_OUTPUT"
+          echo "version=${VERSION}"     >> "$GITHUB_OUTPUT"
+          echo "prerelease=${PRERELEASE}" >> "$GITHUB_OUTPUT"
+          # Stamp version into profiledef.sh
+          sed -i "s/iso_version=.*/iso_version=\"${VERSION}\"/" profiledef.sh
+
+      # ── Generate changelog ──────────────────────────────────
+      - name: Generate changelog
+        id: changelog
+        run: |
+          PREV_TAG=$(git tag --sort=-version:refname | grep -v "${{ steps.version.outputs.tag }}" | head -1)
+          if [[ -n "$PREV_TAG" ]]; then
+            CHANGES=$(git log --pretty=format:"- %s (%h)" "${PREV_TAG}..HEAD")
+          else
+            CHANGES=$(git log --pretty=format:"- %s (%h)")
+          fi
+          EOF="CHANGELOG_EOF_$(date +%s)"
+          echo "changes<<${EOF}" >> "$GITHUB_OUTPUT"
+          echo "$CHANGES"         >> "$GITHUB_OUTPUT"
+          echo "${EOF}"           >> "$GITHUB_OUTPUT"
+
+      # ── Generate GRUB assets ────────────────────────────────
+      - name: Generate GRUB theme assets
+        run: bash scripts/generate-grub-assets.sh
+        continue-on-error: true
+
+      # ── Build ISO ───────────────────────────────────────────
+      - name: Build ISO
+        id: build
+        run: |
+          set -euo pipefail
+          WORK_DIR="/tmp/blur-build"
+          OUT_DIR="${GITHUB_WORKSPACE}/out"
+          mkdir -p "$OUT_DIR"
+
+          mkarchiso -v \
+            -w "$WORK_DIR" \
+            -o "$OUT_DIR" \
+            "${GITHUB_WORKSPACE}"
+
+          ISO_PATH=$(ls "${OUT_DIR}"/*.iso | head -1)
+          ISO_NAME=$(basename "$ISO_PATH")
+          echo "iso_path=${ISO_PATH}" >> "$GITHUB_OUTPUT"
+          echo "iso_name=${ISO_NAME}" >> "$GITHUB_OUTPUT"
+
+      # ── Checksums ───────────────────────────────────────────
+      - name: Generate checksums
+        run: |
+          cd out
+          sha256sum *.iso  > SHA256SUMS
+          b2sum     *.iso  > B2SUMS
+          md5sum    *.iso  > MD5SUMS
+
+      # ── Sign (optional — needs GPG key secret) ──────────────
+      - name: Sign ISO
+        if: ${{ secrets.GPG_PRIVATE_KEY != '' }}
+        env:
+          GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+          GPG_PASSPHRASE:  ${{ secrets.GPG_PASSPHRASE }}
+        run: |
+          echo "$GPG_PRIVATE_KEY" | gpg --batch --import
+          echo "$GPG_PASSPHRASE" | gpg --batch --passphrase-fd 0 \
+            --detach-sign --armor "out/${{ steps.build.outputs.iso_name }}"
+
+      # ── Create GitHub Release ───────────────────────────────
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          VERSION="${{ steps.version.outputs.version }}"
+          PRERELEASE="${{ steps.version.outputs.prerelease }}"
+          ISO_NAME="${{ steps.build.outputs.iso_name }}"
+
+          PRERELEASE_FLAG=""
+          [[ "$PRERELEASE" == "true" ]] && PRERELEASE_FLAG="--prerelease"
+
+          gh release create "$TAG" \
+            $PRERELEASE_FLAG \
+            --title "BLUR OS ${VERSION}" \
+            --notes "## BLUR OS ${VERSION}
+
+          ### What's changed
+          ${{ steps.changelog.outputs.changes }}
+
+          ### Downloads
+          | File | Description |
+          |------|-------------|
+          | \`${ISO_NAME}\` | Bootable installation ISO |
+          | \`SHA256SUMS\` | SHA-256 checksums |
+          | \`B2SUMS\` | BLAKE2 checksums |
+
+          ### Verify integrity
+          \`\`\`bash
+          sha256sum -c SHA256SUMS
+          \`\`\`
+
+          ### Installation
+          Flash to USB:
+          \`\`\`bash
+          dd if=${ISO_NAME} of=/dev/sdX bs=4M status=progress oflag=sync
+          # or
+          cp ${ISO_NAME} /dev/sdX
+          \`\`\`
+
+          ---
+          Built from commit \`${{ github.sha }}\`" \
+            "out/${ISO_NAME}" \
+            "out/SHA256SUMS" \
+            "out/B2SUMS" \
+            "out/MD5SUMS" \
+            $(ls out/*.asc 2>/dev/null || true)

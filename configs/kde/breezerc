@@ -1,0 +1,28 @@
+[Common]
+OutlineIntensity=OutlineOff
+ShadowSize=ShadowVeryLarge
+ShadowStrength=180
+
+[Decoration]
+ButtonSize=ButtonSmall
+DrawBackgroundGradient=false
+
+[Style]
+AnimationsEnabled=true
+AnimationSteps=18
+MenuMode=MenuTitle
+MnemonicsMode=MnemonicAuto
+ProgressBarAnimated=true
+ScrollBarAddLineButtons=0
+ScrollBarSubLineButtons=0
+SplitterProxyEnabled=true
+SplitterProxyWidth=12
+ToolBarDrawItemSeparator=true
+ToolBarHighlightInactiveButtons=true
+UseWMMasks=false
+WindowDragMode=0
+
+[Window Decorations]
+# Translucency: 0=fully opaque, 255=fully transparent (titlebar blur shows through)
+BackgroundOpacity=210
+TitleBarOpacity=210

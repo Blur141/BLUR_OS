@@ -1,0 +1,15 @@
+# NiyasOS IO Scheduler tuning
+# NVMe: none (managed internally by the drive)
+ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/scheduler}="none"
+
+# SSD: mq-deadline
+ACTION=="add|change", KERNEL=="sd[a-z]|xvd[a-z]|vd[a-z]", ATTR{queue/rotational}=="0", ATTR{queue/scheduler}="mq-deadline"
+
+# HDD: bfq
+ACTION=="add|change", KERNEL=="sd[a-z]|xvd[a-z]|vd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
+
+# Enable NCQ depth for NVMe
+ACTION=="add|change", KERNEL=="nvme[0-9]*", ATTR{queue/nr_requests}="2048"
+
+# Read-ahead tuning
+ACTION=="add|change", KERNEL=="sd[a-z]|nvme[0-9]*", ATTR{queue/read_ahead_kb}="2048"

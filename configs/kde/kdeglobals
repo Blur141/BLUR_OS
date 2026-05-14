@@ -1,0 +1,47 @@
+[ColorScheme]
+ColorScheme=BlurDark
+
+[General]
+BrowserApplication=firefox.desktop
+ColorScheme=BlurDark
+Name=BlurDark
+fixed=JetBrains Mono,10,-1,5,50,0,0,0,0,0
+font=Noto Sans,10,-1,5,50,0,0,0,0,0
+menuFont=Noto Sans,10,-1,5,50,0,0,0,0,0
+smallestReadableFont=Noto Sans,8,-1,5,50,0,0,0,0,0
+toolBarFont=Noto Sans,9,-1,5,50,0,0,0,0,0
+XftAntialias=true
+XftHintStyle=hintfull
+XftSubPixel=rgb
+
+[Icons]
+Theme=Papirus-Dark
+
+[KDE]
+AnimationDurationFactor=0.5
+ColorScheme=BlurDark
+LookAndFeelPackage=org.kde.breezedark.desktop
+ShowDeleteCommand=false
+SingleClick=true
+contrast=4
+widgetStyle=kvantum-dark
+
+[KFileDialog Settings]
+Allow Expansion=false
+Automatically select filename extension=true
+Breadcrumb Navigation=true
+Decoration position=2
+LocationCombo Completionmode=5
+PathCombo Completionmode=5
+Show Bookmarks=false
+Show Full Path=false
+Show Speedbar=true
+Show hidden files=false
+Sort by=Name
+Sort directories first=true
+Sort reversed=false
+Speedbar Width=138
+View Style=DetailTree
+
+[Paste Clipboard Mode]
+PasteMode=selection

@@ -1,0 +1,127 @@
+# ─────────────────────────────────────────────────────────────
+#  BLUR OS — GRUB Theme
+#  Palette: base #1e1e2e | surface #313244 | accent #7f5af0
+#           text #cdd6f4 | subtle #6c7086
+# ─────────────────────────────────────────────────────────────
+
+# Global canvas
+title-text:         ""
+desktop-image:      "background.png"
+desktop-color:      "#1e1e2e"
+terminal-left:      "0%"
+terminal-top:       "0%"
+terminal-width:     "100%"
+terminal-height:    "100%"
+terminal-border:    "0"
+terminal-box:       "terminal_box_*.png"
+
+# ── OS title label ────────────────────────────────────────────
++ label {
+    id         = title
+    top        = 8%
+    left       = 50% - 200
+    width      = 400
+    height     = 60
+    text       = "BLUR OS"
+    font       = "blur_bold 36"
+    color      = "#cdd6f4"
+    align      = "center"
+}
+
+# ── Subtitle / version ────────────────────────────────────────
++ label {
+    id         = subtitle
+    top        = 8% + 56
+    left       = 50% - 200
+    width      = 400
+    height     = 28
+    text       = "Choose an option"
+    font       = "blur_regular 13"
+    color      = "#6c7086"
+    align      = "center"
+}
+
+# ── Separator line ────────────────────────────────────────────
++ image {
+    top    = 8% + 90
+    left   = 50% - 220
+    width  = 440
+    height = 1
+    file   = "separator.png"
+}
+
+# ── Boot menu ────────────────────────────────────────────────
++ boot_menu {
+    left     = 50% - 230
+    top      = 8% + 108
+    width    = 460
+    height   = 55%
+
+    item-color           = "#a6adc8"
+    selected-item-color  = "#cdd6f4"
+    icon-width           = 0
+    icon-height          = 0
+
+    item-height          = 48
+    item-padding         = 20
+    item-spacing         = 6
+    item-font            = "blur_regular 14"
+    selected-item-font   = "blur_bold 14"
+
+    menu_pixmap_style    = "select_*.png"
+
+    scrollbar            = false
+}
+
+# ── Timeout progress bar ──────────────────────────────────────
++ progress_bar {
+    id               = timeout_bar
+    left             = 50% - 230
+    top              = 8% + 108 + 55% + 16
+    width            = 460
+    height           = 3
+    fg_color         = "#7f5af0"
+    bg_color         = "#313244"
+    border_color     = "#313244"
+    text             = ""
+    font             = "blur_regular 1"
+    text-color       = "#1e1e2e"
+    bar-style        = "progress_bar_*.png"
+}
+
+# ── Timeout label ─────────────────────────────────────────────
++ label {
+    id     = timeout_label
+    top    = 8% + 108 + 55% + 26
+    left   = 50% - 230
+    width  = 460
+    height = 24
+    text   = "Booting in %d seconds"
+    font   = "blur_regular 11"
+    color  = "#585b70"
+    align  = "center"
+}
+
+# ── Footer: hostname ──────────────────────────────────────────
++ label {
+    top    = 100% - 32
+    left   = 24
+    width  = 300
+    height = 24
+    text   = "@blur"
+    font   = "blur_regular 11"
+    color  = "#45475a"
+    align  = "left"
+}
+
+# ── Footer: hint ─────────────────────────────────────────────
++ label {
+    top    = 100% - 32
+    left   = 100% - 324
+    width  = 300
+    height = 24
+    text   = "↑↓ navigate  ↵ boot  e edit  c console"
+    font   = "blur_regular 11"
+    color  = "#45475a"
+    align  = "right"
+}

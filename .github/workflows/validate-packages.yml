@@ -1,0 +1,64 @@
+name: Validate Package List
+
+on:
+  pull_request:
+    paths:
+      - 'packages.x86_64'
+  push:
+    branches: [main]
+    paths:
+      - 'packages.x86_64'
+
+jobs:
+  validate:
+    name: Check packages exist in Arch repos
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+
+    steps:
+      - name: Initialize pacman
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Sy --noconfirm archlinux-keyring
+          pacman -Su --noconfirm
+          # Enable multilib
+          sed -i '/\[multilib\]/{n;s/^#//}' /etc/pacman.conf
+          pacman -Sy
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate packages
+        id: validate
+        run: |
+          MISSING=()
+          AUR_ONLY=()   # packages that only exist in AUR (annotated in comments)
+
+          while IFS= read -r line; do
+            # Strip inline comment and whitespace
+            pkg=$(echo "$line" | sed 's/#.*//' | tr -d '[:space:]')
+            [[ -z "$pkg" ]] && continue
+
+            if ! pacman -Si "$pkg" &>/dev/null; then
+              # Check if it's marked as AUR in the file
+              if grep -q "# AUR" <<< "$(grep "^${pkg}" packages.x86_64)"; then
+                AUR_ONLY+=("$pkg")
+              else
+                MISSING+=("$pkg")
+              fi
+            fi
+          done < packages.x86_64
+
+          if [[ ${#AUR_ONLY[@]} -gt 0 ]]; then
+            echo "ℹ️ AUR-only packages (expected): ${AUR_ONLY[*]}"
+          fi
+
+          if [[ ${#MISSING[@]} -gt 0 ]]; then
+            echo "❌ Missing packages not in repos or AUR list:"
+            printf '  - %s\n' "${MISSING[@]}"
+            exit 1
+          else
+            echo "✅ All packages validated"
+          fi

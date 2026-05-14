@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# NiyasOS — live ISO installer launcher
+set -euo pipefail
+
+if [[ $EUID -ne 0 ]]; then
+    exec sudo -E bash "$0" "$@"
+fi
+
+INSTALLER_DIR="/usr/share/niyasos/installer"
+if [[ ! -f "$INSTALLER_DIR/install.sh" ]]; then
+    # Fallback: look relative to this script (dev/testing)
+    INSTALLER_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../installer" 2>/dev/null && pwd)" || {
+        echo "ERROR: Installer not found. Is this a NiyasOS ISO?"
+        exit 1
+    }
+fi
+
+exec bash "$INSTALLER_DIR/install.sh" "$@"

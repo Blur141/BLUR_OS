@@ -1,0 +1,14 @@
+[Theme]
+name=breeze-dark
+
+[Wallpapers]
+usersWallpapers=
+
+[KScreen]
+ScreenScaleFactors=
+
+[PlasmaViews][Panel 1][Defaults]
+thickness=44
+
+[PlasmaViews][Panel 2][Defaults]
+thickness=44

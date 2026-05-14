@@ -1,0 +1,11 @@
+[org.kde.breeze]
+ButtonsOnLeft=M
+ButtonsOnRight=IAX
+
+[org.kde.kdecoration2]
+BorderSize=Normal
+BorderSizeAuto=false
+ButtonsOnLeft=M
+ButtonsOnRight=IAX
+NoPlugin=false
+blur=true

@@ -1,0 +1,127 @@
+name: Build ISO
+
+on:
+  push:
+    branches: [main, dev]
+    paths-ignore:
+      - '**.md'
+      - '.github/ISSUE_TEMPLATE/**'
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - '**.md'
+  workflow_dispatch:
+    inputs:
+      debug:
+        description: 'Enable debug output'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build BLUR OS ISO
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+      options: --privileged --cap-add=SYS_ADMIN --cap-add=MKNOD
+
+    steps:
+      # ── Setup ──────────────────────────────────────────────
+      - name: Initialize pacman keyring
+        run: |
+          pacman-key --init
+          pacman-key --populate archlinux
+          pacman -Sy --noconfirm archlinux-keyring
+          pacman -Su --noconfirm
+
+      - name: Install build dependencies
+        run: |
+          pacman -S --noconfirm --needed \
+            archiso git base-devel imagemagick \
+            grub dosfstools squashfs-tools erofs-utils \
+            mkinitcpio-archiso
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Cache pacman packages ───────────────────────────────
+      - name: Cache pacman package cache
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/pacman/pkg
+          key: pacman-${{ runner.os }}-${{ hashFiles('packages.x86_64') }}
+          restore-keys: |
+            pacman-${{ runner.os }}-
+
+      # ── Pre-build steps ─────────────────────────────────────
+      - name: Generate GRUB theme assets
+        run: bash scripts/generate-grub-assets.sh
+        continue-on-error: true   # non-fatal: theme degrades gracefully
+
+      - name: Validate package list
+        run: |
+          echo "[*] Checking package availability..."
+          # Strip comments and blank lines, then verify each package exists
+          grep -v '^\s*#' packages.x86_64 | grep -v '^\s*$' | while read -r pkg; do
+            pacman -Si "$pkg" &>/dev/null || echo "  WARNING: package not found: $pkg"
+          done
+
+      # ── Build ───────────────────────────────────────────────
+      - name: Build ISO
+        id: build
+        run: |
+          set -euo pipefail
+          WORK_DIR="/tmp/blur-build"
+          OUT_DIR="${GITHUB_WORKSPACE}/out"
+          mkdir -p "$OUT_DIR"
+
+          [[ "${{ inputs.debug }}" == "true" ]] && set -x
+
+          mkarchiso -v \
+            -w "$WORK_DIR" \
+            -o "$OUT_DIR" \
+            "${GITHUB_WORKSPACE}"
+
+          ISO_PATH=$(ls "${OUT_DIR}"/*.iso | head -1)
+          ISO_NAME=$(basename "$ISO_PATH")
+          ISO_SIZE=$(du -sh "$ISO_PATH" | cut -f1)
+
+          echo "iso_path=${ISO_PATH}"  >> "$GITHUB_OUTPUT"
+          echo "iso_name=${ISO_NAME}"  >> "$GITHUB_OUTPUT"
+          echo "iso_size=${ISO_SIZE}"  >> "$GITHUB_OUTPUT"
+
+      # ── Checksum ────────────────────────────────────────────
+      - name: Generate checksums
+        run: |
+          cd out
+          sha256sum *.iso > SHA256SUMS
+          b2sum    *.iso > B2SUMS
+          cat SHA256SUMS
+
+      # ── Upload artifact ─────────────────────────────────────
+      - name: Upload ISO artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blur-os-${{ github.sha }}
+          path: |
+            out/*.iso
+            out/SHA256SUMS
+            out/B2SUMS
+          retention-days: 7
+
+      # ── Summary ─────────────────────────────────────────────
+      - name: Build summary
+        run: |
+          echo "## BLUR OS Build" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Property | Value |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|----------|-------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| ISO | \`${{ steps.build.outputs.iso_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Size | ${{ steps.build.outputs.iso_size }} |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Commit | \`${{ github.sha }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> "$GITHUB_STEP_SUMMARY"
+          sha256sum out/*.iso >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true

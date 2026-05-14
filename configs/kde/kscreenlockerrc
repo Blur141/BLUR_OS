@@ -1,0 +1,12 @@
+[Daemon]
+Autolock=true
+LockGrace=5
+LockOnResume=true
+LockOnSuspend=true
+Timeout=10
+
+[Greeter]
+Theme=org.kde.breezedark.desktop
+
+[Greeter][Wallpaper][org.kde.image][General]
+Image=/usr/share/blur-os/wallpapers/default.jpg

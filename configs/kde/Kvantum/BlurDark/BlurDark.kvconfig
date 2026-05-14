@@ -1,0 +1,39 @@
+; BLUR OS — Kvantum dark theme config
+; Provides blur/translucency for Qt apps
+
+[%General]
+author=BLUR OS
+comment=Dark translucent theme for BLUR OS
+spread_progressbar=true
+composite=true
+left_tabs=false
+joined_inactive_tabs=true
+attach_active_tab=false
+mirror_doc_tabs=false
+group_toolbar_buttons=false
+spread_progressbar=true
+
+[Window]
+interior=true
+interior.element=Window
+frame=false
+interior.x11styleShadow=false
+blurring=true
+
+[Panel]
+interior=true
+interior.element=Panel
+frame=true
+frame.element=Panel
+blurring=true
+interior.x11styleShadow=false
+
+[Dialog]
+interior=true
+blurring=true
+
+[Tooltip]
+interior=true
+blurring=true
+interior.element=Tooltip
+frame.element=Tooltip
