@@ -1,4 +1,4 @@
-<![CDATA[<p align="center">
+<p align="center">
   <img src="assets/banner.png" alt="BLUR OS Banner" width="100%"/>
 </p>
 
@@ -262,4 +262,3 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 <p align="center">
   Built with ❤️ on Arch Linux · Powered by <a href="https://wiki.archlinux.org/title/Archiso">archiso</a>
 </p>
-]]>
