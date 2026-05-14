@@ -1,0 +1,224 @@
+# ============================================================
+# BLUR OS - packages.x86_64
+# Base system, KDE Plasma/Wayland, Dev Tools, Performance
+# ============================================================
+
+# --- Base System ---
+base
+base-devel
+linux-lts
+linux-lts-headers
+linux-firmware
+
+mkinitcpio
+
+# --- Bootloader ---
+grub
+efibootmgr
+os-prober
+dosfstools
+
+# --- Init / Core Services ---
+systemd
+systemd-sysvcompat
+systemd-resolvconf
+dbus
+
+# --- Network ---
+networkmanager
+networkmanager-openvpn
+nm-connection-editor
+network-manager-applet
+openssh
+curl
+wget
+rsync
+
+
+# --- File Systems ---
+xfsprogs
+xfsdump
+e2fsprogs
+btrfs-progs
+ntfs-3g
+exfatprogs
+gvfs
+gvfs-smb
+gvfs-mtp
+udisks2
+udiskie
+
+# --- Display Server ---
+wayland
+wayland-protocols
+wayland-utils
+xorg-xwayland
+
+
+# --- GPU Drivers ---
+mesa
+libva-mesa-driver
+#mesa-vdpau
+
+# --- KDE Plasma ---
+plasma-meta
+kde-applications-meta
+sddm
+sddm-kcm
+packagekit-qt6
+discover
+plasma-nm
+plasma-pa
+plasma-browser-integration
+#plasma-wayland-session
+kscreen
+kinfocenter
+partitionmanager
+kvantum
+kvantum-qt5
+papirus-icon-theme
+breeze-gtk
+kde-gtk-config
+
+# --- Fonts ---
+noto-fonts
+noto-fonts-emoji
+noto-fonts-cjk
+ttf-liberation
+ttf-dejavu
+ttf-roboto
+ttf-fira-code
+ttf-jetbrains-mono
+
+# --- Audio ---
+pipewire
+pipewire-alsa
+pipewire-jack
+pipewire-pulse
+wireplumber
+pavucontrol
+easyeffects
+
+# --- Security ---
+apparmor
+audit
+firejail
+ufw
+gnupg
+pass
+polkit
+seahorse
+
+# --- Shell & Terminal ---
+bash
+bash-completion
+zsh
+zsh-completions
+zsh-autosuggestions
+zsh-syntax-highlighting
+tmux
+kitty
+konsole
+
+# --- Editors ---
+neovim
+nano
+
+# --- Dev Tools ---
+git
+github-cli
+python
+python-pip
+python-virtualenv
+python-setuptools
+nodejs
+npm
+rust
+linux-firmware
+rust
+gcc
+clang
+llvm
+cmake
+make
+meson
+ninja
+gdb
+valgrind
+strace
+perf
+hyperfine
+
+# --- Containers / Virtualisation ---
+docker
+docker-compose
+podman
+podman-compose
+buildah
+skopeo
+qemu-full
+libvirt
+virt-manager
+
+# --- CI/CD & Version Control ---
+gitlab-runner
+
+# --- Flatpak ---
+flatpak
+flatpak-builder
+xdg-desktop-portal
+xdg-desktop-portal-kde
+
+# --- Performance ---
+zram-generator
+#ananicy-cpp            # AUR
+irqbalance
+thermald
+power-profiles-daemon
+cpupower
+lm_sensors
+
+# --- System Tools ---
+htop
+btop
+nvtop
+iotop
+nethogs
+bandwhich
+lsof
+pciutils
+usbutils
+dmidecode
+hwinfo
+inxi
+fastfetch
+bat
+eza
+fd
+ripgrep
+fzf
+zoxide
+jq
+yq
+unzip
+unrar
+p7zip
+pigz
+progress
+
+# --- File Manager ---
+dolphin
+ark
+
+# --- Browser ---
+firefox
+
+# --- Virtualization Support ---
+
+# --- Printing (optional) ---
+cups
+cups-pdf
+system-config-printer
+syslinux
+memtest86+
+edk2-shell
